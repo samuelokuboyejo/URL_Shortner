@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Short Link Created</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 50px auto;
+            width: 400px;
+            text-align: center;
+        }
+        h2 {
+            color: #2d7a2d;
+        }
+        p {
+            margin: 10px 0;
+        }
+        a {
+            color: #0078D7;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 8px 16px;
+            background-color: #0078D7;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .btn:hover {
+            background-color: #005fa3;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="fragments/header :: header"></div>
+<h2>Short Link Created Successfully!</h2>
+<p><strong>Original URL:</strong> <span th:text="${shortLink.originalUrl}"></span></p>
+<p><strong>Shortened URL:</strong>
+    <a th:href="${shortLink.shortenedUrl}" th:text="${shortLink.shortenedUrl}"></a>
+</p>
+<a href="/dashboard" class="btn">Back to Dashboard</a>
+</body>
+</html>

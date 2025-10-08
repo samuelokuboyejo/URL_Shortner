@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+
+<body class="bg-light">
+
+<div id="headerContainer"></div>
+
+<div class="container mt-5">
+    <h3 class="mb-4 text-center">My Shortened Links</h3>
+    <table class="table table-striped table-bordered align-middle" id="linksTable">
+        <thead class="table-primary">
+        <tr>
+            <th>Shortened Link</th>
+            <th>Original URL</th>
+            <th>Clicks</th>
+            <th>Created</th>
+            <th>Expires</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script>
+    async function includeHeader() {
+      try {
+        const res = await fetch("/header.html");
+        if (!res.ok) throw new Error("Header not found");
+        const html = await res.text();
+        document.getElementById("headerContainer").innerHTML = html;
+
+        const logoutLink = document.getElementById("logoutLink");
+        if (logoutLink) {
+          logoutLink.addEventListener("click", () => {
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("refreshToken");
+            window.location.href = "/login.html";
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load header:", err);
+      }
+    }
+
+    includeHeader();
+
+    const token = localStorage.getItem("accessToken");
+    if (!token) window.location.href = "/login.html";
+
+    async function fetchLinks() {
+      try {
+        const res = await fetch("/url-shortner/users/me", {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error("Failed to fetch links");
+
+        const data = await res.json();
+        const links = Array.isArray(data) ? data : (data.content || []);
+
+        const tbody = document.querySelector("#linksTable tbody");
+        tbody.innerHTML = "";
+
+        if (links.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" class="text-center">No links found</td></tr>`;
+          return;
+        }
+
+        links.forEach(link => {
+          const shortenedUrl = link.shortenedUrl || `${window.location.origin}/${link.shortCode}`;
+
+          tbody.innerHTML += `
+            <tr>
+              <td><a href="${shortenedUrl}" target="_blank" rel="noopener">${shortenedUrl}</a></td>
+              <td><a href="${link.originalUrl}" target="_blank" rel="noopener">${link.originalUrl}</a></td>
+              <td>${link.clickCount ?? 0}</td>
+              <td>${link.createdAt ? new Date(link.createdAt).toLocaleString() : "-"}</td>
+              <td>${link.expirationTime ? new Date(link.expirationTime).toLocaleString() : "-"}</td>
+            </tr>`;
+        });
+
+      } catch (err) {
+        console.error(err);
+        alert(err.message);
+      }
+    }
+
+    fetchLinks();
+</script>
+
+</body>
+</html>
